@@ -49,9 +49,13 @@ do_binutils_extract() {
 do_binutils_for_build() {
     local -a binutils_opts
 
-    case "${CT_TOOLCHAIN_TYPE}" in
-        native|cross)   return 0;;
-    esac
+    # If using elf2flt, need to actually install into buildtools/bin: elf2flt fails to find
+    # the linker through the symlinks.
+    if [ -z "${CT_ARCH_BINFMT_FLAT}" ]; then
+        case "${CT_TOOLCHAIN_TYPE}" in
+            native|cross)   return 0;;
+        esac
+    fi
 
     CT_DoStep INFO "Installing binutils for build"
     CT_mkdir_pushd "${CT_BUILD_DIR}/build-binutils-build-${CT_BUILD}"

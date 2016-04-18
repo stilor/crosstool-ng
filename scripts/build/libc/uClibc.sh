@@ -276,6 +276,15 @@ manage_uClibc_config() {
         CT_KconfigEnableOption "ARCH_USE_MMU" "${dst}"
     else
         CT_KconfigDisableOption "ARCH_USE_MMU" "${dst}"
+        CT_KconfigDisableOption "UCLIBC_FORMAT_FDPIC_ELF" "${dst}"
+        CT_KconfigDisableOption "UCLIBC_FORMAT_FLAT" "${dst}"
+        CT_KconfigDisableOption "UCLIBC_FORMAT_SHARED_FLAT" "${dst}"
+        case "${CT_SHARED_LIBS},${CT_ARCH_BINFMT_FLAT},${CT_ARCH_BINFMT_FDPIC}" in
+            ,*)     CT_KconfigEnableOption "UCLIBC_FORMAT_FLAT" "${dst}";;
+            y,y,)   CT_KconfigEnableOption "UCLIBC_FORMAT_SHARED_FLAT" "${dst}";;
+            y,,y)   CT_KconfigEnableOption "UCLIBC_FORMAT_FDPIC_ELF" "${dst}";;
+            y,*)    CT_Abort "Unsupported shared format";; # FIXME: does it fit any other uClibc options?
+        esac
     fi
 
     if [ "${CT_SHARED_LIBS}" = "y" ]; then
