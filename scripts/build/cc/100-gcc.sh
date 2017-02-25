@@ -173,7 +173,7 @@ cc_gcc_multilib_housekeeping() {
 
     # sed: prepend dashes or do nothing if default is empty string
     multilib_defaults=( $( cc_gcc_get_spec multilib_defaults "${cc}" | \
-        sed 's/\(^\|[[:space:]]\+\)\([^[:space:]]\)/ -\2/g' ) )
+        sed_r 's/(^|[[:space:]]+)([^[:space:]])/ -\2/g' ) )
     CT_DoLog EXTRA "gcc default flags: '${multilib_defaults}'"
 
     multilibs=( $( "${cc}" -print-multi-lib ) )
@@ -660,7 +660,7 @@ do_gcc_core_backend() {
 
         CT_DoExecLog ALL make ${JOBSFLAGS} -C gcc ${libgcc_rule} \
                               ${repair_cc}
-        sed_r -i -e 's@-lc@@g' gcc/${libgcc_rule}
+        sed_ir -e 's@-lc@@g' gcc/${libgcc_rule}
     else # build_libgcc
         core_targets=( gcc )
     fi   # ! build libgcc

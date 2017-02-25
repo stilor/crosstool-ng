@@ -168,9 +168,11 @@ addToolVersion() {
             fi
             ;;
     esac
+    # TODO: This will break on MacOS X, where sed does not understand \n. I am not fixing
+    # this though, since I plan to re-work package management after 1.23.
     SedExpr2="    default \"${version}\" if ${config_ver_option}"
-    "${sed}" -r -i -e 's/^(# CT_INSERT_VERSION_BELOW)$/\1\n\n'"${SedExpr1}"'/;' "${file}"
-    "${sed}" -r -i -e 's/^(# CT_INSERT_VERSION_STRING_BELOW)$/\1\n'"${SedExpr2}"'/;' "${file}"
+    ${sed_ir} -e 's/^(# CT_INSERT_VERSION_BELOW)$/\1\n\n'"${SedExpr1}"'/;' "${file}"
+    ${sed_ir} -e 's/^(# CT_INSERT_VERSION_STRING_BELOW)$/\1\n'"${SedExpr2}"'/;' "${file}"
 }
 
 cat=

@@ -171,16 +171,26 @@ AS_IF([test "$EGREP" != "$GREP -E"],
 ACX_WITH_DEPRECATED([sed], [SED])
 AC_ARG_VAR([INSTALL], [Specify the full path to GNU sed])
 AC_PROG_SED
-AC_CACHE_CHECK([whether $SED understands -i -e],
-    [acx_cv_sed_i_e],
-    [echo foo > .ct-ng.sed.test
-     ${SED} -i -e 's/foo/bar/' .ct-ng.sed.test >/dev/null 2>&1
+
+# GNU sed only interprets what follows -i as backup extension only if
+# is concatenated with the option ("-i.bak"). On MacOS, sed requires
+# the backup extension after -i, so "-i -e" makes it back "foo" as
+# "foo-e".
+AC_CACHE_CHECK([whether $SED requires extension after  -i],
+    [acx_cv_sed_i_req_arg],
+    [echo foot > .ct-ng.sed.test
+     ${SED} -e 's/ot/tt/' -i .ct-ng.sed.test .ct-ng.sed.test >/dev/null 2>&1
      rc=$?
-     content=`cat .ct-ng.sed.test`
-     rm -f .ct-ng.sed.test
-     AS_IF([test "$rc:$content" = "0:bar"],
-           [acx_cv_sed_i_e=yes],
-           [AC_MSG_ERROR([sed does not accept -i -e])])])
+     content1=`cat .ct-ng.sed.test 2>/dev/null`
+     content2=`cat .ct-ng.sed.test.ct-ng.sed.test 2>/dev/null`
+     rm -f .ct-ng.sed.test .ct-ng.sed.test.ct-ng.sed.test
+     AS_IF([test "$rc:$content1:$content2" = "0:fttt:"],
+           [acx_cv_sed_i_req_arg=no],
+           [test "$rc:$content1:$content2" = "0:fott:foot"],
+           [acx_cv_sed_i_req_arg=yes],
+           [AC_MSG_ERROR([sed does not accept -i or does something odd])])])
+sed_i_opt=-i
+test "$acx_cv_sed_i_req_arg" = "yes" && sed_i_opt="-i ''"
 AC_CACHE_CHECK([which $SED option selects extended regexp],
     [acx_cv_sed_r],
     [opt_r=`echo foo | $SED -r -e 's/f(o)o/b\1ar/' 2>/dev/null`
@@ -190,8 +200,12 @@ AC_CACHE_CHECK([which $SED option selects extended regexp],
            [test "$opt_E" = "boar"],
            [acx_cv_sed_r=-E],
            [AC_MSG_ERROR([neither -r nor -E enables extended regexp])])])
+SED_I="$SED $sed_i_opt"
+AC_SUBST([SED_I])
 SED_R="$SED $acx_cv_sed_r"
 AC_SUBST([SED_R])
+SED_IR="$SED $sed_i_opt $acx_cv_sed_r"
+AC_SUBST([SED_IR])
 
 AC_PROG_LN_S
 
@@ -455,7 +469,7 @@ AS_IF(
         ])])
 # Arrange to have no / in the directory name, no need to create an
 # arbitrarily deep directory structure
-[PACKAGE_VERSION="$( printf "${PACKAGE_VERSION}\n" |"${SED}" -r -e 's:/+:_:g;' )"]
+[PACKAGE_VERSION="$( printf "${PACKAGE_VERSION}\n" |${SED_R} -e 's:/+:_:g;' )"]
 
 # Handle the local case
 AC_SUBST([sublibdir])

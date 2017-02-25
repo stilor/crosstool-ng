@@ -4,11 +4,13 @@
 # Build the list of available samples
 CT_TOP_SAMPLES := $(patsubst $(CT_TOP_DIR)/samples/%/crosstool.config,%,$(sort $(wildcard $(CT_TOP_DIR)/samples/*/crosstool.config)))
 CT_LIB_SAMPLES := $(filter-out $(CT_TOP_SAMPLES),$(patsubst $(CT_LIB_DIR)/samples/%/crosstool.config,%,$(sort $(wildcard $(CT_LIB_DIR)/samples/*/crosstool.config))))
+
+# The mystic expression below is adding a newline for both GNU and MacOS sed variants
 CT_SAMPLES := $(shell echo $(sort $(CT_TOP_SAMPLES) $(CT_LIB_SAMPLES))  \
-                      |$(sed) -r -e 's/ /\n/g;'                         \
-                      |$(sed) -r -e 's/(.*),(.*)/\2,\1/;'               \
+                      |$(sed_r) -e 's/ /\'$$'\n/g;'                     \
+                      |$(sed_r) -e 's/(.*),(.*)/\2,\1/;'                \
                       |sort                                             \
-                      |$(sed) -r -e 's/(.*),(.*)/\2,\1/;'               \
+                      |$(sed_r) -e 's/(.*),(.*)/\2,\1/;'                \
                )
 
 # If set to yes on command line, updates the sample configuration
@@ -186,10 +188,10 @@ target_triplet = $(if $(findstring $(__comma),$(1)),$(word 2,$(subst $(__comma),
 define build_sample
 	@$(CT_ECHO) '  CONF  $(1)'
 	$(SILENT)$(CONF) -s --defconfig=$(call sample_dir,$(1))/crosstool.config $(KCONFIG_TOP)
-	$(SILENT)[ -n "$(CT_PREFIX)" ] && $(sed) -i -r -e 's:^(CT_PREFIX=).*$$:\1"$(CT_PREFIX)":;' .config || :
-	$(SILENT)$(sed) -i -r -e 's:^.*(CT_LOG_(WARN|INFO|EXTRA|DEBUG|ALL)).*$$:# \1 is not set:;' .config
-	$(SILENT)$(sed) -i -r -e 's:^.*(CT_LOG_ERROR).*$$:\1=y:;' .config
-	$(SILENT)$(sed) -i -r -e 's:^(CT_LOG_LEVEL_MAX)=.*$$:\1="ERROR":;' .config
+	$(SILENT)[ -n "$(CT_PREFIX)" ] && $(sed_ir) -e 's:^(CT_PREFIX=).*$$:\1"$(CT_PREFIX)":;' .config || :
+	$(SILENT)$(sed_ir) -e 's:^.*(CT_LOG_(WARN|INFO|EXTRA|DEBUG|ALL)).*$$:# \1 is not set:;' .config
+	$(SILENT)$(sed_ir) -e 's:^.*(CT_LOG_ERROR).*$$:\1=y:;' .config
+	$(SILENT)$(sed_ir) -e 's:^(CT_LOG_LEVEL_MAX)=.*$$:\1="ERROR":;' .config
 	$(SILENT)$(CONF) -s --oldconfig $(KCONFIG_TOP)
 	@$(CT_ECHO) '  BUILD $(1)'
 	$(SILENT)h=$(call host_triplet,$(1)); \

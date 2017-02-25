@@ -1618,9 +1618,9 @@ CT_KconfigSetOption() {
     local file="$3"
 
     ${grep} -E -q "^${option}=.*" "${file}" && \
-        ${sed_r} -i -e "s;^${option}=.*$;${option}=${value};" "${file}" || \
+        ${sed_ir} -e "s;^${option}=.*$;${option}=${value};" "${file}" || \
     ${grep} -E -q "^# ${option} is not set$" "${file}" && \
-        ${sed_r} -i -e "s;^# ${option} is not set$;${option}=${value};" "${file}" || \
+        ${sed_ir} -e "s;^# ${option} is not set$;${option}=${value};" "${file}" || \
     echo "${option}=${value}" >> "${file}"
 }
 
@@ -1641,7 +1641,7 @@ CT_KconfigDisableOption() {
 
     ${grep} -E -q "^# ${option} is not set$" "${file}" || \
     ${grep} -E -q "^${option}=.*$" "${file}" && \
-        ${sed_r} -i -e "s;^${option}=.*$;# ${option} is not set;" "${file}" || \
+        ${sed_ir} -e "s;^${option}=.*$;# ${option} is not set;" "${file}" || \
     echo "# ${option} is not set" >> "${file}"
 }
 
@@ -1653,9 +1653,9 @@ CT_KconfigDeleteOption() {
     local file="${2}"
 
     ${grep} -E -q "^# ${option} is not set$" "${file}" && \
-        ${sed_r} -i -e "/^# ${option} is not set$/d" "${file}" || \
+        ${sed_ir} -e "/^# ${option} is not set$/d" "${file}" || \
     ${grep} -E -q "^${option}=.*$" "${file}" && \
-        ${sed_r} -i -e "/^${option}=.*$/d" "${file}" || true
+        ${sed_ir} -e "/^${option}=.*$/d" "${file}" || true
 }
 
 # Multilib iterator. The caller should be in a directory where the directories

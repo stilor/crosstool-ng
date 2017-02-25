@@ -65,7 +65,7 @@ gen_choice() {
     printf '\n'
     for entry in "${@}"; do
         file="${base_dir}/${entry}.in"
-        _entry=$(printf '%s\n' "${entry}" |${sed_r} -s -e 's/[-.+]/_/g;')
+        _entry=$(printf '%s\n' "${entry}" |${sed_r} -e 's/[-.+]/_/g;')
         printf 'config %s_%s\n' "${cfg_prefix}" "${_entry}"
         printf '    bool\n'
         printf '    prompt "%s"\n' "${entry}"
@@ -84,7 +84,7 @@ gen_choice() {
 
     for entry in "${@}"; do
         file="${base_dir}/${entry}.in"
-        _entry=$(printf '%s\n' "${entry}" |${sed_r} -s -e 's/[-.+]/_/g;')
+        _entry=$(printf '%s\n' "${entry}" |${sed_r} -e 's/[-.+]/_/g;')
         printf '\n'
         if [ "${cond}" = "Y" -o "${cond}" = "y" ]; then
             printf 'config %s_%s_AVAILABLE\n' "${cfg_prefix}" "${_entry}"
@@ -107,7 +107,7 @@ gen_choice() {
     printf '# Generated file, do not edit!!!\n'
     for entry in "${@}"; do
         file="${base_dir}/${entry}.in"
-        _entry=$(printf '%s\n' "${entry}" |${sed_r} -s -e 's/[-.+]/_/g;')
+        _entry=$(printf '%s\n' "${entry}" |${sed_r} -e 's/[-.+]/_/g;')
         if [ -f "${file}.2" ]; then
             printf '\n'
             printf 'if %s_%s\n' "${cfg_prefix}" "${_entry}"
@@ -135,7 +135,7 @@ gen_menu() {
     printf '\n'
     for entry in "${@}"; do
         file="${base_dir}/${entry}.in"
-        _entry=$(printf '%s\n' "${entry}" |${sed_r} -s -e 's/[-.+]/_/g;')
+        _entry=$(printf '%s\n' "${entry}" |${sed_r} -e 's/[-.+]/_/g;')
         printf 'menuconfig %s_%s\n' "${cfg_prefix}" "${_entry}"
         printf '    bool\n'
         if ${grep} -E '^## default' ${file} >/dev/null 2>&1; then
