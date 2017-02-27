@@ -73,7 +73,9 @@ addToolVersion() {
 
     [ -f "${file}" ] || return 0
 
-    v=$(echo "${version}" |${sed_r} -e 's/-/_/g; s/\./_/g;')
+    # TODO this scripts won't work on MacOS. I don't intend to fix it, though
+    # as I am going to rework package version management after 1.23.
+    v=$(echo "${version}" |${sed} -r -e 's/-/_/g; s/\./_/g;')
 
     config_ver_option="${cat}_V_${v}"
 
@@ -171,8 +173,8 @@ addToolVersion() {
     # TODO: This will break on MacOS X, where sed does not understand \n. I am not fixing
     # this though, since I plan to re-work package management after 1.23.
     SedExpr2="    default \"${version}\" if ${config_ver_option}"
-    ${sed_ir} -e 's/^(# CT_INSERT_VERSION_BELOW)$/\1\n\n'"${SedExpr1}"'/;' "${file}"
-    ${sed_ir} -e 's/^(# CT_INSERT_VERSION_STRING_BELOW)$/\1\n'"${SedExpr2}"'/;' "${file}"
+    ${sed} -i -r -e 's/^(# CT_INSERT_VERSION_BELOW)$/\1\n\n'"${SedExpr1}"'/;' "${file}"
+    ${sed} -i -r -e 's/^(# CT_INSERT_VERSION_STRING_BELOW)$/\1\n'"${SedExpr2}"'/;' "${file}"
 }
 
 cat=

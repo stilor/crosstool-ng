@@ -162,14 +162,14 @@ AC_ARG_VAR([INSTALL], [Specify the full path to a BSD-compatible install])
 AC_PROG_INSTALL
 
 ACX_WITH_DEPRECATED([grep], [GREP])
-AC_ARG_VAR([INSTALL], [Specify the full path to GNU grep])
+AC_ARG_VAR([GREP], [Specify the full path to GNU grep])
 AC_PROG_GREP
 AC_PROG_EGREP
 AS_IF([test "$EGREP" != "$GREP -E"],
     [AC_MSG_ERROR([egrep is not $GREP -E])])
 
 ACX_WITH_DEPRECATED([sed], [SED])
-AC_ARG_VAR([INSTALL], [Specify the full path to GNU sed])
+AC_ARG_VAR([SED], [Specify the full path to GNU sed])
 AC_PROG_SED
 
 # GNU sed only interprets what follows -i as backup extension only if
@@ -189,23 +189,21 @@ AC_CACHE_CHECK([whether $SED requires extension after  -i],
            [test "$rc:$content1:$content2" = "0:fott:foot"],
            [acx_cv_sed_i_req_arg=yes],
            [AC_MSG_ERROR([sed does not accept -i or does something odd])])])
-sed_i_opt=-i
-test "$acx_cv_sed_i_req_arg" = "yes" && sed_i_opt="-i ''"
+AS_IF([test "$acx_cv_sed_i_req_arg" = "yes"],
+      [SED_I_OPT="-i ''"],
+      [SED_I_OPT=-i])
+AC_SUBST([SED_I_OPT])
+
 AC_CACHE_CHECK([which $SED option selects extended regexp],
-    [acx_cv_sed_r],
+    [acx_cv_sed_r_opt],
     [opt_r=`echo foo | $SED -r -e 's/f(o)o/b\1ar/' 2>/dev/null`
      opt_E=`echo foo | $SED -E -e 's/f(o)o/b\1ar/' 2>/dev/null`
      AS_IF([test "$opt_r" = "boar"],
-           [acx_cv_sed_r=-r],
+           [acx_cv_sed_r_opt=-r],
            [test "$opt_E" = "boar"],
-           [acx_cv_sed_r=-E],
+           [acx_cv_sed_r_opt=-E],
            [AC_MSG_ERROR([neither -r nor -E enables extended regexp])])])
-SED_I="$SED $sed_i_opt"
-AC_SUBST([SED_I])
-SED_R="$SED $acx_cv_sed_r"
-AC_SUBST([SED_R])
-SED_IR="$SED $sed_i_opt $acx_cv_sed_r"
-AC_SUBST([SED_IR])
+AC_SUBST([SED_R_OPT], [$acx_cv_sed_r_opt])
 
 AC_PROG_LN_S
 
@@ -469,7 +467,7 @@ AS_IF(
         ])])
 # Arrange to have no / in the directory name, no need to create an
 # arbitrarily deep directory structure
-[PACKAGE_VERSION="$( printf "${PACKAGE_VERSION}\n" |${SED_R} -e 's:/+:_:g;' )"]
+[PACKAGE_VERSION="$( printf "${PACKAGE_VERSION}\n" |${SED} ${SED_R_OPT} -e 's:/+:_:g;' )"]
 
 # Handle the local case
 AC_SUBST([sublibdir])

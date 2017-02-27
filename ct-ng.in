@@ -22,6 +22,15 @@ export CT_DOC_DIR:=@@CT_DOCDIR@@
 # This is crosstool-NG version string
 export CT_VERSION:=@@CT_VERSION@@
 
+# sed tweaks
+export CT_SED_I_OPT := @@CT_sed_i_opt@@
+export CT_SED_R_OPT := @@CT_sed_r_opt@@
+
+# same, for local makefile use
+sed_i  = $(sed) $(CT_SED_I_OPT)
+sed_r  = $(sed) $(CT_SED_R_OPT)
+sed_ir = $(sed) $(CT_SED_I_OPT) $(CT_SED_R_OPT)
+
 # Paths found by ./configure
 include $(CT_LIB_DIR)/paths.mk
 

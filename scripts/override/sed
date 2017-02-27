@@ -1,0 +1,44 @@
+#!@CONFIG_SHELL@
+
+if [ "${CT_SED_R_OPT}:${CT_SED_I_OPT}" = "-r:-i" ]; then
+    # default case, GNU sed
+    exec @TOOL_PATH@ "$@"
+fi
+
+# Go through the arguments and replace -i/-r with their local variants
+declare -a opts opts0
+declare opt_i opt_r o
+
+for o in "$@"; do
+    case "$o" in
+    -i)
+        opt_i=${CT_SED_I_OPT}
+        ;;
+    -r)
+        opt_r=${CT_SED_R_OPT}
+        ;;
+    -ir|-ri)
+        opt_i=${CT_SED_I_OPT}
+        opt_r=${CT_SED_R_OPT}
+        ;;
+    -*i*)
+        opt_i=${CT_SED_I_OPT}
+        opts+=( "${o//i}" )
+        ;;
+    -*r*)
+        opt_r=${CT_SED_R_OPT}
+        opts+=( "${o//r}" )
+        ;;
+    -*i*r*|-*r*i*)
+        opt_i=${CT_SED_I_OPT}
+        opt_r=${CT_SED_R_OPT}
+        opts+=( "${o//[ir]}" )
+        ;;
+    *)
+        opts+=( "${o}" )
+        ;;
+    esac
+done
+# Unquote whitespace in CT_SED_x_OPT, if any
+eval "opts0+=( ${opt_i} ${opt_r} )"
+exec ${sed} "${opts0[@]}" "${opts[@]}"

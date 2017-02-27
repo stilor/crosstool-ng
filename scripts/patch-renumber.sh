@@ -1,5 +1,6 @@
 #!/bin/sh
 # Yes, this intends to be a true POSIX script file.
+# TODO this script does not work on macos. Don't know if we need it though.
 set -e
 
 myname="$0"
@@ -8,7 +9,7 @@ myname="$0"
 # It is expected that this script is only to be run from the
 # source directory of crosstool-NG, so it is trivial to find
 # paths.sh (we can't use  ". paths.sh", as POSIX states that
-# $PATH should be searched for, and $PATH most probably doe
+# $PATH should be searched for, and $PATH most probably does
 # not include "."), hence the "./".
 . "./paths.sh"
 
@@ -59,7 +60,7 @@ for p in "${src}/"*.patch*; do
     newname="$(printf "%03d-%s"                                     \
                       "${cpt}"                                      \
                       "$( basename "${p}"                           \
-                          |${sed_r} -e 's/^[[:digit:]]+[-_]//'   \
+                          |${sed} -r -e 's/^[[:digit:]]+[-_]//'   \
                                        -e "${sed_re}"               \
                         )"                                          \
               )"
