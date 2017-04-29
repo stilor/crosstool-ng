@@ -1,0 +1,9 @@
+# Config (config.guess, config.sub scripts)
+
+config CONFIG_SUB_GIT_CSET
+    string "git cset"
+    default "2fbde7c1b582995bbdb3bedf3e2be3233beb79a0"
+    help
+      Git changeset to check out config.guess/config.sub from.
+      If Git is not supported, this will be checked out using the download
+      agent (wget/curl).

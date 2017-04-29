@@ -15,6 +15,7 @@ config OVERRIDE_CONFIG_GUESS_SUB
     bool
     prompt "Override config.{guess,sub}"
     default y
+    select COMP_TOOLS_config
     help
       Override tools' versions of config.guess and config.sub with the ones
       from crosstool-NG. This means that all instances of config.guess and

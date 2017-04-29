@@ -657,13 +657,14 @@ CT_GetFileExtension() {
 }
 
 # Try to retrieve the specified URL (HTTP or FTP)
-# Usage: CT_DoGetFile <URL>
+# Usage: CT_DoGetFile <URL> [<dest>]
 # This functions always returns true (0), as it can be legitimate not
 # to find the requested URL (think about snapshots, different layouts
 # for different gcc versions, etc...).
+# If dest is not specified, base name of the URL is used.
 CT_DoGetFile() {
     local url="${1}"
-    local dest="${CT_TARBALLS_DIR}/${url##*/}"
+    local dest="${CT_TARBALLS_DIR}/${2:-${url##*/}}"
     local tmp="${dest}.tmp-dl"
     local ok
     local T
