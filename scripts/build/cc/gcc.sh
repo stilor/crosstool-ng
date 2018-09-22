@@ -306,6 +306,13 @@ do_gcc_core_backend() {
     local -a extra_user_config
     local arg
 
+    local -a GCC_MULTILIB_FLAGS
+    GCC_MULTILIB_FLAGS=( \
+        MULTILIB_OPTIONS='m64/m32 mno-sse' \
+        MULTILIB_DIRNAMES='64 32 no-sse' \
+        MULTILIB_OSDIRNAMES='m64=../lib64$(call if_multiarch,:x86_64-linux-gnu) m32=../lib$(call if_multiarch,:i386-linux-gnu) mno-sse=no-sse' \
+        MULTILIB_EXCEPTIONS='m64/mno-sse' )
+
     for arg in "$@"; do
         eval "${arg// /\\ }"
     done
@@ -605,23 +612,23 @@ do_gcc_core_backend() {
         # Next we have to configure gcc, create libgcc.mk then edit it...
         # So much easier if we just edit the source tree, but hey...
         if [ ! -f "${CT_SRC_DIR}/gcc/gcc/BASE-VER" ]; then
-            CT_DoExecLog CFG make ${JOBSFLAGS} configure-libiberty
-            CT_DoExecLog ALL make ${JOBSFLAGS} -C libiberty libiberty.a
-            CT_DoExecLog CFG make ${JOBSFLAGS} configure-gcc configure-libcpp
-            CT_DoExecLog ALL make ${JOBSFLAGS} all-libcpp
+            CT_DoExecLog CFG make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" configure-libiberty
+            CT_DoExecLog ALL make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" -C libiberty libiberty.a
+            CT_DoExecLog CFG make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" configure-gcc configure-libcpp
+            CT_DoExecLog ALL make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" all-libcpp
         else
-            CT_DoExecLog CFG make ${JOBSFLAGS} configure-gcc configure-libcpp configure-build-libiberty
-            CT_DoExecLog ALL make ${JOBSFLAGS} all-libcpp all-build-libiberty
+            CT_DoExecLog CFG make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" configure-gcc configure-libcpp configure-build-libiberty
+            CT_DoExecLog ALL make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" all-libcpp all-build-libiberty
         fi
         # HACK: gcc-4.2 uses libdecnumber to build libgcc.mk, so build it here.
         if [ -d "${CT_SRC_DIR}/gcc/libdecnumber" ]; then
-            CT_DoExecLog CFG make ${JOBSFLAGS} configure-libdecnumber
-            CT_DoExecLog ALL make ${JOBSFLAGS} -C libdecnumber libdecnumber.a
+            CT_DoExecLog CFG make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" configure-libdecnumber
+            CT_DoExecLog ALL make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" -C libdecnumber libdecnumber.a
         fi
         # HACK: gcc-4.8 uses libbacktrace to make libgcc.mvars, so make it here.
         if [ -d "${CT_SRC_DIR}/gcc/libbacktrace" ]; then
-            CT_DoExecLog CFG make ${JOBSFLAGS} configure-libbacktrace
-            CT_DoExecLog ALL make ${JOBSFLAGS} -C libbacktrace
+            CT_DoExecLog CFG make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" configure-libbacktrace
+            CT_DoExecLog ALL make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" -C libbacktrace
         fi
 
         libgcc_rule="libgcc.mvars"
@@ -639,7 +646,7 @@ do_gcc_core_backend() {
             repair_cc=""
         fi
 
-        CT_DoExecLog ALL make ${JOBSFLAGS} -C gcc ${libgcc_rule} \
+        CT_DoExecLog ALL make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" -C gcc ${libgcc_rule} \
                               ${repair_cc}
         sed -r -i -e 's@-lc@@g' gcc/${libgcc_rule}
     else # build_libgcc
@@ -668,7 +675,7 @@ do_gcc_core_backend() {
     esac
 
     CT_DoLog EXTRA "Building ${log_txt}"
-    CT_DoExecLog ALL make ${JOBSFLAGS} ${core_targets_all}
+    CT_DoExecLog ALL make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" ${core_targets_all}
 
     # Do not pass ${JOBSFLAGS} here: recent GCC builds have been failing
     # in parallel 'make install' at random locations: libitm, libcilk,
@@ -679,7 +686,7 @@ do_gcc_core_backend() {
     # attempts to remove the destination and re-create it, but another
     # install gets in the way.
     CT_DoLog EXTRA "Installing ${log_txt}"
-    CT_DoExecLog ALL make ${core_targets_install}
+    CT_DoExecLog ALL make "${GCC_MULTILIB_FLAGS[@]}" ${core_targets_install}
 
     # Remove the libtool "pseudo-libraries": having them in the installed
     # tree makes the libtoolized utilities that are built next assume
@@ -866,6 +873,13 @@ do_gcc_backend() {
     local -a final_LDFLAGS
     local tmp
     local arg
+
+    local -a GCC_MULTILIB_FLAGS
+    GCC_MULTILIB_FLAGS=( \
+        MULTILIB_OPTIONS='m64/m32 mno-sse' \
+        MULTILIB_DIRNAMES='64 32 no-sse' \
+        MULTILIB_OSDIRNAMES='m64=../lib64$(call if_multiarch,:x86_64-linux-gnu) m32=../lib$(call if_multiarch,:i386-linux-gnu) mno-sse=no-sse' \
+        MULTILIB_EXCEPTIONS='m64/mno-sse' )
 
     for arg in "$@"; do
         eval "${arg// /\\ }"
@@ -1140,18 +1154,18 @@ do_gcc_backend() {
 
     if [ "${CT_CANADIAN}" = "y" ]; then
         CT_DoLog EXTRA "Building libiberty"
-        CT_DoExecLog ALL make ${JOBSFLAGS} all-build-libiberty
+        CT_DoExecLog ALL make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" all-build-libiberty
     fi
 
     CT_DoLog EXTRA "Building final gcc compiler"
-    CT_DoExecLog ALL make ${JOBSFLAGS} all
+    CT_DoExecLog ALL make ${JOBSFLAGS} "${GCC_MULTILIB_FLAGS[@]}" all
 
     # See the note on issues with parallel 'make install' in GCC above.
     CT_DoLog EXTRA "Installing final gcc compiler"
     if [ "${CT_STRIP_TARGET_TOOLCHAIN_EXECUTABLES}" = "y" ]; then
-        CT_DoExecLog ALL make install-strip
+        CT_DoExecLog ALL make "${GCC_MULTILIB_FLAGS[@]}" install-strip
     else
-        CT_DoExecLog ALL make install
+        CT_DoExecLog ALL make "${GCC_MULTILIB_FLAGS[@]}" install
     fi
 
     # Remove the libtool "pseudo-libraries": having them in the installed
